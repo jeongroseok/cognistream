@@ -1,0 +1,10 @@
+{
+  "cmake.configureSettings": {
+    "CMAKE_PREFIX_PATH": ["C:/Users/origi/libraries/libtorch"],
+    "CMAKE_MODULE_PATH": [
+      "C:/Users/origi/libraries/cef_binary_130.1.16+g5a7e5ed+chromium-130.0.6723.117_windows64/cmake",
+      "C:/Users/origi/libraries/cef_binary_130.1.16+g5a7e5ed+chromium-130.0.6723.117_windows64/libcef_dll"
+    ],
+    "CEF_ROOT": "C:/Users/origi/libraries/cef_binary_130.1.16+g5a7e5ed+chromium-130.0.6723.117_windows64"
+  }
+}
