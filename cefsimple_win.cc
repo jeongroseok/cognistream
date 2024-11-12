@@ -8,19 +8,18 @@
 #include "include/cef_sandbox_win.h"
 #include "tests/cefsimple/simple_app.h"
 
-// When generating projects with CMake the CEF_USE_SANDBOX value will be defined
-// automatically if using the required compiler version. Pass -DUSE_SANDBOX=OFF
-// to the CMake command-line to disable use of the sandbox.
-// Uncomment this line to manually enable sandbox support.
+// CMake으로 프로젝트를 생성할 때 CEF_USE_SANDBOX 값이 자동으로 정의됩니다.
+// 필요한 컴파일러 버전을 사용하는 경우 자동으로 정의됩니다. 샌드박스 사용을 비활성화하려면
+// CMake 명령줄에 -DUSE_SANDBOX=OFF를 전달하세요.
+// 샌드박스 지원을 수동으로 활성화하려면 이 줄의 주석을 제거하세요.
 // #define CEF_USE_SANDBOX 1
 
 #if defined(CEF_USE_SANDBOX)
-// The cef_sandbox.lib static library may not link successfully with all VS
-// versions.
+// cef_sandbox.lib 정적 라이브러리는 모든 VS 버전과 성공적으로 링크되지 않을 수 있습니다.
 #pragma comment(lib, "cef_sandbox.lib")
 #endif
 
-// Entry point function for all processes.
+// 모든 프로세스의 진입점 함수.
 int APIENTRY wWinMain(HINSTANCE hInstance,
                       HINSTANCE hPrevInstance,
                       LPTSTR lpCmdLine,
@@ -31,17 +30,14 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   int exit_code;
 
 #if defined(ARCH_CPU_32_BITS)
-  // Run the main thread on 32-bit Windows using a fiber with the preferred 4MiB
-  // stack size. This function must be called at the top of the executable entry
-  // point function (`main()` or `wWinMain()`). It is used in combination with
-  // the initial stack size of 0.5MiB configured via the `/STACK:0x80000` linker
-  // flag on executable targets. This saves significant memory on threads (like
-  // those in the Windows thread pool, and others) whose stack size can only be
-  // controlled via the linker flag.
+  // 32비트 Windows에서 선호되는 4MiB 스택 크기를 가진 fiber로 메인 스레드를 실행합니다.
+  // 이 함수는 실행 파일의 진입점 함수(`main()` 또는 `wWinMain()`)의 최상단에서 호출되어야 합니다.
+  // 링커 플래그 `/STACK:0x80000`을 통해 구성된 초기 스택 크기 0.5MiB와 함께 사용됩니다.
+  // 이는 Windows 스레드 풀과 같이 스택 크기를 링커 플래그로만 제어할 수 있는 스레드의 메모리를 절약합니다.
   exit_code = CefRunWinMainWithPreferredStackSize(wWinMain, hInstance,
                                                   lpCmdLine, nCmdShow);
   if (exit_code >= 0) {
-    // The fiber has completed so return here.
+    // fiber가 완료되었으므로 여기서 반환합니다.
     return exit_code;
   }
 #endif
@@ -49,52 +45,47 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   void* sandbox_info = nullptr;
 
 #if defined(CEF_USE_SANDBOX)
-  // Manage the life span of the sandbox information object. This is necessary
-  // for sandbox support on Windows. See cef_sandbox_win.h for complete details.
+  // 샌드박스 정보 객체의 수명을 관리합니다. 이는 Windows에서 샌드박스 지원을 위해 필요합니다.
+  // 자세한 내용은 cef_sandbox_win.h를 참조하세요.
   CefScopedSandboxInfo scoped_sandbox;
   sandbox_info = scoped_sandbox.sandbox_info();
 #endif
 
-  // Provide CEF with command-line arguments.
+  // CEF에 명령줄 인수를 제공합니다.
   CefMainArgs main_args(hInstance);
 
-  // CEF applications have multiple sub-processes (render, GPU, etc) that share
-  // the same executable. This function checks the command-line and, if this is
-  // a sub-process, executes the appropriate logic.
+  // CEF 애플리케이션은 동일한 실행 파일을 공유하는 여러 하위 프로세스(render, GPU 등)를 가집니다.
+  // 이 함수는 명령줄을 확인하고, 하위 프로세스인 경우 적절한 로직을 실행합니다.
   exit_code = CefExecuteProcess(main_args, nullptr, sandbox_info);
   if (exit_code >= 0) {
-    // The sub-process has completed so return here.
+    // 하위 프로세스가 완료되었으므로 여기서 반환합니다.
     return exit_code;
   }
 
-  // Parse command-line arguments for use in this method.
+  // 이 메서드에서 사용하기 위해 명령줄 인수를 파싱합니다.
   CefRefPtr<CefCommandLine> command_line = CefCommandLine::CreateCommandLine();
   command_line->InitFromString(::GetCommandLineW());
 
-  // Specify CEF global settings here.
+  // 여기에서 CEF 전역 설정을 지정합니다.
   CefSettings settings;
 
 #if !defined(CEF_USE_SANDBOX)
   settings.no_sandbox = true;
 #endif
 
-  // SimpleApp implements application-level callbacks for the browser process.
-  // It will create the first browser instance in OnContextInitialized() after
-  // CEF has initialized.
+  // SimpleApp은 브라우저 프로세스에 대한 애플리케이션 수준 콜백을 구현합니다.
+  // CEF가 초기화된 후 OnContextInitialized()에서 첫 번째 브라우저 인스턴스를 생성합니다.
   CefRefPtr<SimpleApp> app(new SimpleApp);
 
-  // Initialize the CEF browser process. May return false if initialization
-  // fails or if early exit is desired (for example, due to process singleton
-  // relaunch behavior).
+  // CEF 브라우저 프로세스를 초기화합니다. 초기화 실패 시 또는 프로세스 단일 실행 재시작 동작 등으로 조기 종료가 필요한 경우 false를 반환할 수 있습니다.
   if (!CefInitialize(main_args, settings, app.get(), sandbox_info)) {
     return CefGetExitCode();
   }
 
-  // Run the CEF message loop. This will block until CefQuitMessageLoop() is
-  // called.
+  // CEF 메시지 루프를 실행합니다. CefQuitMessageLoop()가 호출될 때까지 차단됩니다.
   CefRunMessageLoop();
 
-  // Shut down CEF.
+  // CEF를 종료합니다.
   CefShutdown();
 
   return 0;

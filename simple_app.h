@@ -7,22 +7,22 @@
 
 #include "include/cef_app.h"
 
-// Implement application-level callbacks for the browser process.
+// 브라우저 프로세스를 위한 애플리케이션 수준 콜백을 구현
 class SimpleApp : public CefApp, public CefBrowserProcessHandler {
  public:
   SimpleApp();
 
-  // CefApp methods:
+  // CefApp 메소드
   CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override {
     return this;
   }
 
-  // CefBrowserProcessHandler methods:
+  // CefBrowserProcessHandler 메소드
   void OnContextInitialized() override;
   CefRefPtr<CefClient> GetDefaultClient() override;
 
  private:
-  // Include the default reference counting implementation.
+  // 기본 참조 카운팅 구현 포함
   IMPLEMENT_REFCOUNTING(SimpleApp);
 };
 

@@ -3,17 +3,16 @@
 // can be found in the LICENSE file.
 
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by cefsimple.rc
-//
+// Microsoft Visual C++에서 생성한 포함 파일.
+// cefsimple.rc에서 사용됨.
 
 #define IDI_CEFSIMPLE 120
 #define IDI_SMALL 121
 
-// Avoid files associated with MacOS
+// MacOS와 관련된 파일을 제외
 #define _X86_
 
-// Next default values for new objects
+// 새 객체에 대한 다음 기본 값
 //
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS

@@ -9,10 +9,10 @@ find_package(Torch REQUIRED)
 
 
 #
-# Source files.
+# 소스 파일 설정
 #
 
-# cefsimple sources.
+# cefsimple 소스 파일
 set(CEFSIMPLE_SRCS
   simple_app.cc
   simple_app.h
@@ -39,34 +39,34 @@ set(CEFSIMPLE_WIN_SRCS_WINDOWS
   win/cefsimple.rc
 )
 APPEND_PLATFORM_SOURCES(CEFSIMPLE_WIN_SRCS)
-source_group(cefsimple\\\\win FILES ${CEFSIMPLE_WIN_SRCS})
+source_group(cefsimple\\win FILES ${CEFSIMPLE_WIN_SRCS})
 
 set(CEFSIMPLE_SRCS
   ${CEFSIMPLE_SRCS}
   ${CEFSIMPLE_WIN_SRCS}
 )
 
-# cefsimple helper sources.
+# cefsimple 헬퍼 소스 파일
 set(CEFSIMPLE_HELPER_SRCS_MAC
   process_helper_mac.cc
 )
 APPEND_PLATFORM_SOURCES(CEFSIMPLE_HELPER_SRCS)
 source_group(cefsimple FILES ${CEFSIMPLE_HELPER_SRCS})
 
-# cefsimple resources.
+# cefsimple 리소스 파일
 set(CEFSIMPLE_RESOURCES_MAC_SRCS_MAC
   mac/Info.plist.in
   mac/cefsimple.icns
 )
 APPEND_PLATFORM_SOURCES(CEFSIMPLE_RESOURCES_MAC_SRCS)
-source_group(cefsimple\\\\mac FILES ${CEFSIMPLE_RESOURCES_MAC_SRCS})
+source_group(cefsimple\\mac FILES ${CEFSIMPLE_RESOURCES_MAC_SRCS})
 
 set(CEFSIMPLE_RESOURCES_MAC_ENGLISH_LPROJ_SRCS_MAC
   mac/English.lproj/InfoPlist.strings
   mac/English.lproj/MainMenu.xib
 )
 APPEND_PLATFORM_SOURCES(CEFSIMPLE_RESOURCES_MAC_ENGLISH_LPROJ_SRCS)
-source_group(cefsimple\\\\mac\\\\English.lproj FILES ${CEFSIMPLE_RESOURCES_MAC_ENGLISH_LPROJ_SRCS})
+source_group(cefsimple\\mac\\English.lproj FILES ${CEFSIMPLE_RESOURCES_MAC_ENGLISH_LPROJ_SRCS})
 
 set(CEFSIMPLE_RESOURCES_SRCS
   ${CEFSIMPLE_RESOURCES_MAC_SRCS}
@@ -75,57 +75,57 @@ set(CEFSIMPLE_RESOURCES_SRCS
 
 
 #
-# Shared configuration.
+# 공통 설정
 #
 
-# Target executable names.
+# 타겟 실행 파일 이름 설정
 set(CEF_TARGET "cefsimple")
 if(OS_MAC)
   set(CEF_HELPER_TARGET "cefsimple_Helper")
   set(CEF_HELPER_OUTPUT_NAME "cefsimple Helper")
 else()
-  # Logical target used to link the libcef library.
+  # libcef 라이브러리 링크를 위한 논리 타겟
   ADD_LOGICAL_TARGET("libcef_lib" "${CEF_LIB_DEBUG}" "${CEF_LIB_RELEASE}")
 endif()
 
-# Determine the target output directory.
+# 타겟 출력 디렉토리 설정
 SET_CEF_TARGET_OUT_DIR()
 
 
 #
-# Linux configuration.
+# 리눅스 구성
 #
 
 if(OS_LINUX)
-  # Executable target.
+  # 실행 파일 타겟 생성
   add_executable(${CEF_TARGET} ${CEFSIMPLE_SRCS})
   SET_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
   add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
   target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
 
-  # Set rpath so that libraries can be placed next to the executable.
+  # rpath 설정하여 라이브러리를 실행 파일 옆에 배치 가능
   set_target_properties(${CEF_TARGET} PROPERTIES INSTALL_RPATH "$ORIGIN")
   set_target_properties(${CEF_TARGET} PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
   set_target_properties(${CEF_TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CEF_TARGET_OUT_DIR})
 
-  # Copy binary and resource files to the target output directory.
+  # 바이너리 및 리소스 파일을 타겟 출력 디렉토리에 복사
   COPY_FILES("${CEF_TARGET}" "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}")
   COPY_FILES("${CEF_TARGET}" "${CEF_RESOURCE_FILES}" "${CEF_RESOURCE_DIR}" "${CEF_TARGET_OUT_DIR}")
   if(EXISTS "${CEF_BINARY_DIR}/libminigbm.so")
     COPY_FILES("${CEF_TARGET}" "libminigbm.so" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}")
   endif()
 
-  # Set SUID permissions on the chrome-sandbox target.
+  # chrome-sandbox 타겟에 SUID 권한 설정
   SET_LINUX_SUID_PERMISSIONS("${CEF_TARGET}" "${CEF_TARGET_OUT_DIR}/chrome-sandbox")
 endif()
 
 
 #
-# Mac OS X configuration.
+# Mac OS X 구성
 #
 
 if(OS_MAC)
-  option(OPTION_USE_ARC "Build with ARC (automatic Reference Counting) on macOS." ON)
+  option(OPTION_USE_ARC "macOS에서 ARC(자동 참조 카운팅) 사용 여부." ON)
   if(OPTION_USE_ARC)
     list(APPEND CEF_COMPILER_FLAGS
       -fobjc-arc
@@ -135,19 +135,19 @@ if(OS_MAC)
     )
   endif()
 
-  # Output path for the main app bundle.
+  # 메인 앱 번들 출력 경로
   set(CEF_APP "${CEF_TARGET_OUT_DIR}/${CEF_TARGET}.app")
 
-  # Variables referenced from the main Info.plist file.
+  # 주요 Info.plist 파일에서 참조되는 변수
   set(EXECUTABLE_NAME "${CEF_TARGET}")
   set(PRODUCT_NAME "${CEF_TARGET}")
 
   if(USE_SANDBOX)
-    # Logical target used to link the cef_sandbox library.
+    # cef_sandbox 라이브러리를 링크하기 위한 논리 타겟
     ADD_LOGICAL_TARGET("cef_sandbox_lib" "${CEF_SANDBOX_LIB_DEBUG}" "${CEF_SANDBOX_LIB_RELEASE}")
   endif()
 
-  # Main app bundle target.
+  # 메인 앱 번들 타겟 생성
   add_executable(${CEF_TARGET} MACOSX_BUNDLE ${CEFSIMPLE_RESOURCES_SRCS} ${CEFSIMPLE_SRCS})
   SET_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
   add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
@@ -156,7 +156,7 @@ if(OS_MAC)
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/mac/Info.plist.in
   )
 
-  # Copy the CEF framework into the Frameworks directory.
+  # CEF 프레임워크를 Frameworks 디렉토리에 복사
   add_custom_command(
     TARGET ${CEF_TARGET}
     POST_BUILD
@@ -166,22 +166,19 @@ if(OS_MAC)
     VERBATIM
   )
 
-  # Create the multiple Helper app bundle targets.
+  # 여러 Helper 앱 번들 타겟 생성
   foreach(_suffix_list ${CEF_HELPER_APP_SUFFIXES})
-    # Convert to a list and extract the suffix values.
+    # 접미사 값을 추출
     string(REPLACE ":" ";" _suffix_list ${_suffix_list})
     list(GET _suffix_list 0 _name_suffix)
     list(GET _suffix_list 1 _target_suffix)
     list(GET _suffix_list 2 _plist_suffix)
 
-    # Define Helper target and output names.
+    # Helper 타겟 및 출력 이름 설정
     set(_helper_target "${CEF_HELPER_TARGET}${_target_suffix}")
     set(_helper_output_name "${CEF_HELPER_OUTPUT_NAME}${_name_suffix}")
 
-    # Create Helper-specific variants of the helper-Info.plist file. Do this
-    # manually because the configure_file command (which is executed as part of
-    # MACOSX_BUNDLE_INFO_PLIST) uses global env variables and would insert the
-    # wrong values with multiple targets.
+    # Helper-specific Info.plist 파일 생성
     set(_helper_info_plist "${CMAKE_CURRENT_BINARY_DIR}/helper-Info${_target_suffix}.plist")
     file(READ "${CMAKE_CURRENT_SOURCE_DIR}/mac/helper-Info.plist.in" _plist_contents)
     string(REPLACE "\${EXECUTABLE_NAME}" "${_helper_output_name}" _plist_contents ${_plist_contents})
@@ -189,7 +186,7 @@ if(OS_MAC)
     string(REPLACE "\${BUNDLE_ID_SUFFIX}" "${_plist_suffix}" _plist_contents ${_plist_contents})
     file(WRITE ${_helper_info_plist} ${_plist_contents})
 
-    # Create Helper executable target.
+    # Helper 실행 파일 타겟 생성
     add_executable(${_helper_target} MACOSX_BUNDLE ${CEFSIMPLE_HELPER_SRCS})
     SET_EXECUTABLE_TARGET_PROPERTIES(${_helper_target})
     add_dependencies(${_helper_target} libcef_dll_wrapper)
@@ -203,10 +200,10 @@ if(OS_MAC)
       target_link_libraries(${_helper_target} cef_sandbox_lib)
     endif()
 
-    # Add the Helper as a dependency of the main executable target.
+    # Helper를 메인 타겟의 종속성으로 추가
     add_dependencies(${CEF_TARGET} "${_helper_target}")
 
-    # Copy the Helper app bundle into the Frameworks directory.
+    # Helper 앱 번들을 Frameworks 디렉토리에 복사
     add_custom_command(
       TARGET ${CEF_TARGET}
       POST_BUILD
@@ -217,38 +214,35 @@ if(OS_MAC)
     )
   endforeach()
 
-  # Manually process and copy over resource files.
-  # The Xcode generator can support this via the set_target_properties RESOURCE
-  # directive but that doesn't properly handle nested resource directories.
-  # Remove these prefixes from input file paths.
+  # 리소스 파일 수동 처리 및 복사
   set(PREFIXES "mac/")
   COPY_MAC_RESOURCES("${CEFSIMPLE_RESOURCES_SRCS}" "${PREFIXES}" "${CEF_TARGET}" "${CMAKE_CURRENT_SOURCE_DIR}" "${CEF_APP}")
 endif()
 
 
 #
-# Windows configuration.
+# Windows 구성
 #
 
 if(OS_WINDOWS)
-  # Executable target.
+  # 실행 파일 타겟 생성
   add_executable(${CEF_TARGET} WIN32 ${CEFSIMPLE_SRCS})
   add_subdirectory(${CEF_LIBCEF_DLL_WRAPPER_PATH} libcef_dll_wrapper)
 
-  # add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
+  # 타겟 속성 설정 및 라이브러리 링크
   SET_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
   target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
 
   if(USE_SANDBOX)
-    # Logical target used to link the cef_sandbox library.
+    # cef_sandbox 라이브러리를 링크하기 위한 논리 타겟
     ADD_LOGICAL_TARGET("cef_sandbox_lib" "${CEF_SANDBOX_LIB_DEBUG}" "${CEF_SANDBOX_LIB_RELEASE}")
     target_link_libraries(${CEF_TARGET} cef_sandbox_lib ${CEF_SANDBOX_STANDARD_LIBS})
   endif()
 
-  # Add the custom manifest files to the executable.
+  # 실행 파일에 커스텀 매니페스트 파일 추가
   ADD_WINDOWS_MANIFEST("${CMAKE_CURRENT_SOURCE_DIR}/win" "${CEF_TARGET}" "exe")
 
-  # Copy binary and resource files to the target output directory.
+  # 바이너리 및 리소스 파일을 타겟 출력 디렉토리에 복사
   COPY_FILES("${CEF_TARGET}" "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}")
   COPY_FILES("${CEF_TARGET}" "${CEF_RESOURCE_FILES}" "${CEF_RESOURCE_DIR}" "${CEF_TARGET_OUT_DIR}")
 endif()

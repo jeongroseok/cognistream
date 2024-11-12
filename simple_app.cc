@@ -15,8 +15,7 @@
 
 namespace {
 
-// When using the Views framework this object provides the delegate
-// implementation for the CefWindow that hosts the Views-based browser.
+// Views 프레임워크를 사용하는 경우, CefWindow의 델리게이트 구현을 제공
 class SimpleWindowDelegate : public CefWindowDelegate {
  public:
   SimpleWindowDelegate(CefRefPtr<CefBrowserView> browser_view,
@@ -27,7 +26,7 @@ class SimpleWindowDelegate : public CefWindowDelegate {
         initial_show_state_(initial_show_state) {}
 
   void OnWindowCreated(CefRefPtr<CefWindow> window) override {
-    // Add the browser view and show the window.
+    // 브라우저 뷰 추가 및 창 표시
     window->AddChildView(browser_view_);
 
     if (initial_show_state_ != CEF_SHOW_STATE_HIDDEN) {
@@ -36,7 +35,7 @@ class SimpleWindowDelegate : public CefWindowDelegate {
 
     if (initial_show_state_ != CEF_SHOW_STATE_MINIMIZED &&
         initial_show_state_ != CEF_SHOW_STATE_HIDDEN) {
-      // Give keyboard focus to the browser view.
+      // 브라우저 뷰에 키보드 포커스 요청
       browser_view_->RequestFocus();
     }
   }
@@ -46,7 +45,7 @@ class SimpleWindowDelegate : public CefWindowDelegate {
   }
 
   bool CanClose(CefRefPtr<CefWindow> window) override {
-    // Allow the window to close if the browser says it's OK.
+    // 브라우저가 닫을 수 있는지 확인
     CefRefPtr<CefBrowser> browser = browser_view_->GetBrowser();
     if (browser) {
       return browser->GetHost()->TryCloseBrowser();
@@ -75,6 +74,7 @@ class SimpleWindowDelegate : public CefWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(SimpleWindowDelegate);
 };
 
+// BrowserView 델리게이트 구현
 class SimpleBrowserViewDelegate : public CefBrowserViewDelegate {
  public:
   explicit SimpleBrowserViewDelegate(cef_runtime_style_t runtime_style)
@@ -83,12 +83,11 @@ class SimpleBrowserViewDelegate : public CefBrowserViewDelegate {
   bool OnPopupBrowserViewCreated(CefRefPtr<CefBrowserView> browser_view,
                                  CefRefPtr<CefBrowserView> popup_browser_view,
                                  bool is_devtools) override {
-    // Create a new top-level Window for the popup. It will show itself after
-    // creation.
+    // 팝업을 위한 새 창 생성
     CefWindow::CreateTopLevelWindow(new SimpleWindowDelegate(
         popup_browser_view, runtime_style_, CEF_SHOW_STATE_NORMAL));
 
-    // We created the Window.
+    // 창을 생성했음을 표시
     return true;
   }
 
@@ -107,46 +106,45 @@ class SimpleBrowserViewDelegate : public CefBrowserViewDelegate {
 
 SimpleApp::SimpleApp() = default;
 
+// 컨텍스트 초기화 시 호출
 void SimpleApp::OnContextInitialized() {
   CEF_REQUIRE_UI_THREAD();
 
   CefRefPtr<CefCommandLine> command_line =
       CefCommandLine::GetGlobalCommandLine();
 
-  // Check if Alloy style will be used.
+  // Alloy 스타일 사용 여부 확인
   cef_runtime_style_t runtime_style = CEF_RUNTIME_STYLE_DEFAULT;
   bool use_alloy_style = command_line->HasSwitch("use-alloy-style");
   if (use_alloy_style) {
     runtime_style = CEF_RUNTIME_STYLE_ALLOY;
   }
 
-  // SimpleHandler implements browser-level callbacks.
+  // SimpleHandler는 브라우저 수준 콜백을 구현
   CefRefPtr<SimpleHandler> handler(new SimpleHandler(use_alloy_style));
 
-  // Specify CEF browser settings here.
+  // CEF 브라우저 설정 지정
   CefBrowserSettings browser_settings;
 
   std::string url;
 
-  // Check if a "--url=" value was provided via the command-line. If so, use
-  // that instead of the default URL.
+  // 명령줄에서 "--url=" 값이 제공되었는지 확인
   url = command_line->GetSwitchValue("url");
   if (url.empty()) {
     url = "https://www.google.com";
   }
 
-  // Views is enabled by default (add `--use-native` to disable).
+  // Views는 기본적으로 활성화됨 (`--use-native` 추가 시 비활성화)
   const bool use_views = !command_line->HasSwitch("use-native");
 
-  // If using Views create the browser using the Views framework, otherwise
-  // create the browser using the native platform framework.
+  // Views를 사용하는 경우와 네이티브 플랫폼 프레임워크를 사용하는 경우로 분기
   if (use_views) {
-    // Create the BrowserView.
+    // BrowserView 생성
     CefRefPtr<CefBrowserView> browser_view = CefBrowserView::CreateBrowserView(
         handler, url, browser_settings, nullptr, nullptr,
         new SimpleBrowserViewDelegate(runtime_style));
 
-    // Optionally configure the initial show state.
+    // 초기 표시 상태 설정 (선택 사항)
     cef_show_state_t initial_show_state = CEF_SHOW_STATE_NORMAL;
     const std::string& show_state_value =
         command_line->GetSwitchValue("initial-show-state");
@@ -156,36 +154,35 @@ void SimpleApp::OnContextInitialized() {
       initial_show_state = CEF_SHOW_STATE_MAXIMIZED;
     }
 #if defined(OS_MAC)
-    // Hidden show state is only supported on MacOS.
+    // MacOS에서만 지원되는 숨김 표시 상태
     else if (show_state_value == "hidden") {
       initial_show_state = CEF_SHOW_STATE_HIDDEN;
     }
 #endif
 
-    // Create the Window. It will show itself after creation.
+    // 창 생성 (생성 후 자동 표시)
     CefWindow::CreateTopLevelWindow(new SimpleWindowDelegate(
         browser_view, runtime_style, initial_show_state));
   } else {
-    // Information used when creating the native window.
+    // 네이티브 창 생성을 위한 정보
     CefWindowInfo window_info;
 
 #if defined(OS_WIN)
-    // On Windows we need to specify certain flags that will be passed to
-    // CreateWindowEx().
+    // Windows에서는 CreateWindowEx에 전달할 플래그 지정
     window_info.SetAsPopup(nullptr, "cefsimple");
 #endif
 
-    // Alloy style will create a basic native window. Chrome style will create a
-    // fully styled Chrome UI window.
+    // 런타임 스타일 설정
     window_info.runtime_style = runtime_style;
 
-    // Create the first browser window.
+    // 첫 번째 브라우저 창 생성
     CefBrowserHost::CreateBrowser(window_info, handler, url, browser_settings,
                                   nullptr, nullptr);
   }
 }
 
+// 기본 클라이언트 반환
 CefRefPtr<CefClient> SimpleApp::GetDefaultClient() {
-  // Called when a new browser window is created via Chrome style UI.
+  // Chrome 스타일 UI를 통해 새 브라우저 창이 생성될 때 호출
   return SimpleHandler::GetInstance();
 }

@@ -6,9 +6,9 @@
 #define CEF_TESTS_CEFSIMPLE_SIMPLE_HANDLER_H_
 
 #include <list>
-
 #include "include/cef_client.h"
 
+// SimpleHandler 클래스는 CefClient 및 관련 핸들러를 구현합니다.
 class SimpleHandler : public CefClient,
                       public CefDisplayHandler,
                       public CefLifeSpanHandler,
@@ -17,24 +17,24 @@ class SimpleHandler : public CefClient,
   explicit SimpleHandler(bool is_alloy_style);
   ~SimpleHandler() override;
 
-  // Provide access to the single global instance of this object.
+  // 이 객체의 전역 인스턴스에 접근하기 위한 정적 메소드
   static SimpleHandler* GetInstance();
 
-  // CefClient methods:
+  // CefClient 메소드
   CefRefPtr<CefDisplayHandler> GetDisplayHandler() override { return this; }
   CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override { return this; }
   CefRefPtr<CefLoadHandler> GetLoadHandler() override { return this; }
 
-  // CefDisplayHandler methods:
+  // CefDisplayHandler 메소드
   void OnTitleChange(CefRefPtr<CefBrowser> browser,
                      const CefString& title) override;
 
-  // CefLifeSpanHandler methods:
+  // CefLifeSpanHandler 메소드
   void OnAfterCreated(CefRefPtr<CefBrowser> browser) override;
   bool DoClose(CefRefPtr<CefBrowser> browser) override;
   void OnBeforeClose(CefRefPtr<CefBrowser> browser) override;
 
-  // CefLoadHandler methods:
+  // CefLoadHandler 메소드
   void OnLoadError(CefRefPtr<CefBrowser> browser,
                    CefRefPtr<CefFrame> frame,
                    ErrorCode errorCode,
@@ -43,27 +43,27 @@ class SimpleHandler : public CefClient,
 
   void ShowMainWindow();
 
-  // Request that all existing browser windows close.
+  // 기존의 모든 브라우저 창을 닫도록 요청
   void CloseAllBrowsers(bool force_close);
 
   bool IsClosing() const { return is_closing_; }
 
  private:
-  // Platform-specific implementation.
+  // 플랫폼별 구현
   void PlatformTitleChange(CefRefPtr<CefBrowser> browser,
                            const CefString& title);
   void PlatformShowWindow(CefRefPtr<CefBrowser> browser);
 
-  // True if this client is Alloy style, otherwise Chrome style.
+  // 이 클라이언트가 Alloy 스타일인지 여부
   const bool is_alloy_style_;
 
-  // List of existing browser windows. Only accessed on the CEF UI thread.
+  // 기존 브라우저 창 목록. CEF UI 스레드에서만 접근
   typedef std::list<CefRefPtr<CefBrowser>> BrowserList;
   BrowserList browser_list_;
 
   bool is_closing_ = false;
 
-  // Include the default reference counting implementation.
+  // 기본 참조 카운팅 구현 포함
   IMPLEMENT_REFCOUNTING(SimpleHandler);
 };
 
