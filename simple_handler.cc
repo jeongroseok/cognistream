@@ -2,7 +2,7 @@
 // reserved. Use of this source code is governed by a BSD-style license that
 // can be found in the LICENSE file.
 
-#include "tests/cefsimple/simple_handler.h"
+#include "simple_handler.h"
 
 #include <sstream>
 #include <string>
@@ -49,15 +49,17 @@ void SimpleHandler::OnTitleChange(CefRefPtr<CefBrowser> browser,
                                   const CefString& title) {
   CEF_REQUIRE_UI_THREAD();
 
+  CefString title_overrided = (std::wstring(L"🐭 내맘대로 브라우저 - ") + title.ToWString()).c_str();
+
   if (auto browser_view = CefBrowserView::GetForBrowser(browser)) {
     // Views 프레임워크를 사용하여 창 제목 설정
     CefRefPtr<CefWindow> window = browser_view->GetWindow();
     if (window) {
-      window->SetTitle(title);
+      window->SetTitle(title_overrided);
     }
   } else if (is_alloy_style_) {
     // 플랫폼 API를 사용하여 창 제목 설정
-    PlatformTitleChange(browser, title);
+    PlatformTitleChange(browser, title_overrided);
   }
 }
 
