@@ -8,12 +8,14 @@
 #include "include/cef_app.h"
 
 // 브라우저 프로세스를 위한 애플리케이션 수준 콜백을 구현
-class SimpleApp : public CefApp, public CefBrowserProcessHandler {
- public:
+class SimpleApp : public CefApp, public CefBrowserProcessHandler
+{
+public:
   SimpleApp();
 
   // CefApp 메소드
-  CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override {
+  CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override
+  {
     return this;
   }
 
@@ -21,9 +23,9 @@ class SimpleApp : public CefApp, public CefBrowserProcessHandler {
   void OnContextInitialized() override;
   CefRefPtr<CefClient> GetDefaultClient() override;
 
- private:
+private:
   // 기본 참조 카운팅 구현 포함
   IMPLEMENT_REFCOUNTING(SimpleApp);
 };
 
-#endif  // CEF_TESTS_CEFSIMPLE_SIMPLE_APP_H_
+#endif // CEF_TESTS_CEFSIMPLE_SIMPLE_APP_H_

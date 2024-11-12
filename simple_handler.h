@@ -6,19 +6,21 @@
 #define CEF_TESTS_CEFSIMPLE_SIMPLE_HANDLER_H_
 
 #include <list>
+
 #include "include/cef_client.h"
 
 // SimpleHandler 클래스는 CefClient 및 관련 핸들러를 구현합니다.
 class SimpleHandler : public CefClient,
                       public CefDisplayHandler,
                       public CefLifeSpanHandler,
-                      public CefLoadHandler {
- public:
+                      public CefLoadHandler
+{
+public:
   explicit SimpleHandler(bool is_alloy_style);
   ~SimpleHandler() override;
 
   // 이 객체의 전역 인스턴스에 접근하기 위한 정적 메소드
-  static SimpleHandler* GetInstance();
+  static SimpleHandler *GetInstance();
 
   // CefClient 메소드
   CefRefPtr<CefDisplayHandler> GetDisplayHandler() override { return this; }
@@ -27,7 +29,7 @@ class SimpleHandler : public CefClient,
 
   // CefDisplayHandler 메소드
   void OnTitleChange(CefRefPtr<CefBrowser> browser,
-                     const CefString& title) override;
+                     const CefString &title) override;
 
   // CefLifeSpanHandler 메소드
   void OnAfterCreated(CefRefPtr<CefBrowser> browser) override;
@@ -38,8 +40,8 @@ class SimpleHandler : public CefClient,
   void OnLoadError(CefRefPtr<CefBrowser> browser,
                    CefRefPtr<CefFrame> frame,
                    ErrorCode errorCode,
-                   const CefString& errorText,
-                   const CefString& failedUrl) override;
+                   const CefString &errorText,
+                   const CefString &failedUrl) override;
 
   void ShowMainWindow();
 
@@ -48,10 +50,10 @@ class SimpleHandler : public CefClient,
 
   bool IsClosing() const { return is_closing_; }
 
- private:
+private:
   // 플랫폼별 구현
   void PlatformTitleChange(CefRefPtr<CefBrowser> browser,
-                           const CefString& title);
+                           const CefString &title);
   void PlatformShowWindow(CefRefPtr<CefBrowser> browser);
 
   // 이 클라이언트가 Alloy 스타일인지 여부
@@ -67,4 +69,4 @@ class SimpleHandler : public CefClient,
   IMPLEMENT_REFCOUNTING(SimpleHandler);
 };
 
-#endif  // CEF_TESTS_CEFSIMPLE_SIMPLE_HANDLER_H_
+#endif // CEF_TESTS_CEFSIMPLE_SIMPLE_HANDLER_H_

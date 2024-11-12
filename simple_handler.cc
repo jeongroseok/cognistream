@@ -15,56 +15,67 @@
 #include "include/wrapper/cef_closure_task.h"
 #include "include/wrapper/cef_helpers.h"
 
-namespace {
+namespace
+{
 
-// 전역 인스턴스 포인터
-SimpleHandler* g_instance = nullptr;
+  // 전역 인스턴스 포인터
+  SimpleHandler *g_instance = nullptr;
 
-// 지정된 내용을 포함하는 data: URI를 반환
-std::string GetDataURI(const std::string& data, const std::string& mime_type) {
-  return "data:" + mime_type + ";base64," +
-         CefURIEncode(CefBase64Encode(data.data(), data.size()), false)
-             .ToString();
-}
+  // 지정된 내용을 포함하는 data: URI를 반환
+  std::string GetDataURI(const std::string &data, const std::string &mime_type)
+  {
+    return "data:" + mime_type + ";base64," +
+           CefURIEncode(CefBase64Encode(data.data(), data.size()), false)
+               .ToString();
+  }
 
-}  // namespace
+} // namespace
 
 SimpleHandler::SimpleHandler(bool is_alloy_style)
-    : is_alloy_style_(is_alloy_style) {
+    : is_alloy_style_(is_alloy_style)
+{
   DCHECK(!g_instance);
   g_instance = this;
 }
 
-SimpleHandler::~SimpleHandler() {
+SimpleHandler::~SimpleHandler()
+{
   g_instance = nullptr;
 }
 
 // 정적 메소드로 인스턴스 반환
-SimpleHandler* SimpleHandler::GetInstance() {
+SimpleHandler *SimpleHandler::GetInstance()
+{
   return g_instance;
 }
 
 // 제목 변경 시 호출
 void SimpleHandler::OnTitleChange(CefRefPtr<CefBrowser> browser,
-                                  const CefString& title) {
+                                  const CefString &title)
+{
   CEF_REQUIRE_UI_THREAD();
 
   CefString title_overrided = (std::wstring(L"🐭 내맘대로 브라우저 - ") + title.ToWString()).c_str();
 
-  if (auto browser_view = CefBrowserView::GetForBrowser(browser)) {
+  if (auto browser_view = CefBrowserView::GetForBrowser(browser))
+  {
     // Views 프레임워크를 사용하여 창 제목 설정
     CefRefPtr<CefWindow> window = browser_view->GetWindow();
-    if (window) {
+    if (window)
+    {
       window->SetTitle(title_overrided);
     }
-  } else if (is_alloy_style_) {
+  }
+  else if (is_alloy_style_)
+  {
     // 플랫폼 API를 사용하여 창 제목 설정
     PlatformTitleChange(browser, title_overrided);
   }
 }
 
 // 브라우저 생성 후 호출
-void SimpleHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser) {
+void SimpleHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser)
+{
   CEF_REQUIRE_UI_THREAD();
 
   // 런타임 스타일 확인
@@ -76,11 +87,13 @@ void SimpleHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser) {
 }
 
 // 브라우저 닫기 시 호출
-bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser) {
+bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser)
+{
   CEF_REQUIRE_UI_THREAD();
 
   // 메인 창 닫기 처리
-  if (browser_list_.size() == 1) {
+  if (browser_list_.size() == 1)
+  {
     // 창 닫기 플래그 설정
     is_closing_ = true;
   }
@@ -90,19 +103,23 @@ bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser) {
 }
 
 // 브라우저 닫기 전에 호출
-void SimpleHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser) {
+void SimpleHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser)
+{
   CEF_REQUIRE_UI_THREAD();
 
   // 브라우저 목록에서 제거
   BrowserList::iterator bit = browser_list_.begin();
-  for (; bit != browser_list_.end(); ++bit) {
-    if ((*bit)->IsSame(browser)) {
+  for (; bit != browser_list_.end(); ++bit)
+  {
+    if ((*bit)->IsSame(browser))
+    {
       browser_list_.erase(bit);
       break;
     }
   }
 
-  if (browser_list_.empty()) {
+  if (browser_list_.empty())
+  {
     // 모든 창이 닫히면 메시지 루프 종료
     CefQuitMessageLoop();
   }
@@ -112,17 +129,20 @@ void SimpleHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser) {
 void SimpleHandler::OnLoadError(CefRefPtr<CefBrowser> browser,
                                 CefRefPtr<CefFrame> frame,
                                 ErrorCode errorCode,
-                                const CefString& errorText,
-                                const CefString& failedUrl) {
+                                const CefString &errorText,
+                                const CefString &failedUrl)
+{
   CEF_REQUIRE_UI_THREAD();
 
   // Alloy 스타일이 아닌 경우 Chrome의 오류 페이지 표시 허용
-  if (!is_alloy_style_) {
+  if (!is_alloy_style_)
+  {
     return;
   }
 
   // 다운로드된 파일의 오류는 표시하지 않음
-  if (errorCode == ERR_ABORTED) {
+  if (errorCode == ERR_ABORTED)
+  {
     return;
   }
 
@@ -137,50 +157,62 @@ void SimpleHandler::OnLoadError(CefRefPtr<CefBrowser> browser,
 }
 
 // 메인 창 표시
-void SimpleHandler::ShowMainWindow() {
-  if (!CefCurrentlyOn(TID_UI)) {
+void SimpleHandler::ShowMainWindow()
+{
+  if (!CefCurrentlyOn(TID_UI))
+  {
     // UI 스레드에서 실행
     CefPostTask(TID_UI, base::BindOnce(&SimpleHandler::ShowMainWindow, this));
     return;
   }
 
-  if (browser_list_.empty()) {
+  if (browser_list_.empty())
+  {
     return;
   }
 
   auto main_browser = browser_list_.front();
 
-  if (auto browser_view = CefBrowserView::GetForBrowser(main_browser)) {
+  if (auto browser_view = CefBrowserView::GetForBrowser(main_browser))
+  {
     // Views 프레임워크를 사용하여 창 표시
-    if (auto window = browser_view->GetWindow()) {
+    if (auto window = browser_view->GetWindow())
+    {
       window->Show();
     }
-  } else if (is_alloy_style_) {
+  }
+  else if (is_alloy_style_)
+  {
     PlatformShowWindow(main_browser);
   }
 }
 
 // 모든 브라우저 창 닫기
-void SimpleHandler::CloseAllBrowsers(bool force_close) {
-  if (!CefCurrentlyOn(TID_UI)) {
+void SimpleHandler::CloseAllBrowsers(bool force_close)
+{
+  if (!CefCurrentlyOn(TID_UI))
+  {
     // UI 스레드에서 실행
     CefPostTask(TID_UI, base::BindOnce(&SimpleHandler::CloseAllBrowsers, this,
                                        force_close));
     return;
   }
 
-  if (browser_list_.empty()) {
+  if (browser_list_.empty())
+  {
     return;
   }
 
   BrowserList::const_iterator it = browser_list_.begin();
-  for (; it != browser_list_.end(); ++it) {
+  for (; it != browser_list_.end(); ++it)
+  {
     (*it)->GetHost()->CloseBrowser(force_close);
   }
 }
 
 #if !defined(OS_MAC)
-void SimpleHandler::PlatformShowWindow(CefRefPtr<CefBrowser> browser) {
+void SimpleHandler::PlatformShowWindow(CefRefPtr<CefBrowser> browser)
+{
   NOTIMPLEMENTED();
 }
 #endif
