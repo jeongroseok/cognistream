@@ -2,6 +2,12 @@
 # reserved. Use of this source code is governed by a BSD-style license that
 # can be found in the LICENSE file.
 
+cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
+project(cefsimple)
+find_package(CEF REQUIRED)
+find_package(Torch REQUIRED)
+
+
 #
 # Source files.
 #
@@ -12,38 +18,38 @@ set(CEFSIMPLE_SRCS
   simple_app.h
   simple_handler.cc
   simple_handler.h
-  )
+)
 set(CEFSIMPLE_SRCS_LINUX
   cefsimple_linux.cc
   simple_handler_linux.cc
-  )
+)
 set(CEFSIMPLE_SRCS_MAC
   cefsimple_mac.mm
   simple_handler_mac.mm
-  )
+)
 set(CEFSIMPLE_SRCS_WINDOWS
   cefsimple_win.cc
   resource.h
   simple_handler_win.cc
-  )
+)
 APPEND_PLATFORM_SOURCES(CEFSIMPLE_SRCS)
 source_group(cefsimple FILES ${CEFSIMPLE_SRCS})
 
 set(CEFSIMPLE_WIN_SRCS_WINDOWS
   win/cefsimple.rc
-  )
+)
 APPEND_PLATFORM_SOURCES(CEFSIMPLE_WIN_SRCS)
 source_group(cefsimple\\\\win FILES ${CEFSIMPLE_WIN_SRCS})
 
 set(CEFSIMPLE_SRCS
   ${CEFSIMPLE_SRCS}
   ${CEFSIMPLE_WIN_SRCS}
-  )
+)
 
 # cefsimple helper sources.
 set(CEFSIMPLE_HELPER_SRCS_MAC
   process_helper_mac.cc
-  )
+)
 APPEND_PLATFORM_SOURCES(CEFSIMPLE_HELPER_SRCS)
 source_group(cefsimple FILES ${CEFSIMPLE_HELPER_SRCS})
 
@@ -51,21 +57,21 @@ source_group(cefsimple FILES ${CEFSIMPLE_HELPER_SRCS})
 set(CEFSIMPLE_RESOURCES_MAC_SRCS_MAC
   mac/Info.plist.in
   mac/cefsimple.icns
-  )
+)
 APPEND_PLATFORM_SOURCES(CEFSIMPLE_RESOURCES_MAC_SRCS)
 source_group(cefsimple\\\\mac FILES ${CEFSIMPLE_RESOURCES_MAC_SRCS})
 
 set(CEFSIMPLE_RESOURCES_MAC_ENGLISH_LPROJ_SRCS_MAC
   mac/English.lproj/InfoPlist.strings
   mac/English.lproj/MainMenu.xib
-  )
+)
 APPEND_PLATFORM_SOURCES(CEFSIMPLE_RESOURCES_MAC_ENGLISH_LPROJ_SRCS)
 source_group(cefsimple\\\\mac\\\\English.lproj FILES ${CEFSIMPLE_RESOURCES_MAC_ENGLISH_LPROJ_SRCS})
 
 set(CEFSIMPLE_RESOURCES_SRCS
   ${CEFSIMPLE_RESOURCES_MAC_SRCS}
   ${CEFSIMPLE_RESOURCES_MAC_ENGLISH_LPROJ_SRCS}
-  )
+)
 
 
 #
@@ -105,7 +111,7 @@ if(OS_LINUX)
   # Copy binary and resource files to the target output directory.
   COPY_FILES("${CEF_TARGET}" "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}")
   COPY_FILES("${CEF_TARGET}" "${CEF_RESOURCE_FILES}" "${CEF_RESOURCE_DIR}" "${CEF_TARGET_OUT_DIR}")
-  if (EXISTS "${CEF_BINARY_DIR}/libminigbm.so")
+  if(EXISTS "${CEF_BINARY_DIR}/libminigbm.so")
     COPY_FILES("${CEF_TARGET}" "libminigbm.so" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}")
   endif()
 
@@ -123,10 +129,10 @@ if(OS_MAC)
   if(OPTION_USE_ARC)
     list(APPEND CEF_COMPILER_FLAGS
       -fobjc-arc
-      )
+    )
     set_target_properties(${target} PROPERTIES
       CLANG_ENABLE_OBJC_ARC "YES"
-      )
+    )
   endif()
 
   # Output path for the main app bundle.
@@ -148,17 +154,17 @@ if(OS_MAC)
   target_link_libraries(${CEF_TARGET} libcef_dll_wrapper ${CEF_STANDARD_LIBS})
   set_target_properties(${CEF_TARGET} PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/mac/Info.plist.in
-    )
+  )
 
   # Copy the CEF framework into the Frameworks directory.
   add_custom_command(
     TARGET ${CEF_TARGET}
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CEF_BINARY_DIR}/Chromium Embedded Framework.framework"
-            "${CEF_APP}/Contents/Frameworks/Chromium Embedded Framework.framework"
+    "${CEF_BINARY_DIR}/Chromium Embedded Framework.framework"
+    "${CEF_APP}/Contents/Frameworks/Chromium Embedded Framework.framework"
     VERBATIM
-    )
+  )
 
   # Create the multiple Helper app bundle targets.
   foreach(_suffix_list ${CEF_HELPER_APP_SUFFIXES})
@@ -191,7 +197,7 @@ if(OS_MAC)
     set_target_properties(${_helper_target} PROPERTIES
       MACOSX_BUNDLE_INFO_PLIST ${_helper_info_plist}
       OUTPUT_NAME ${_helper_output_name}
-      )
+    )
 
     if(USE_SANDBOX)
       target_link_libraries(${_helper_target} cef_sandbox_lib)
@@ -205,10 +211,10 @@ if(OS_MAC)
       TARGET ${CEF_TARGET}
       POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_directory
-              "${CEF_TARGET_OUT_DIR}/${_helper_output_name}.app"
-              "${CEF_APP}/Contents/Frameworks/${_helper_output_name}.app"
+      "${CEF_TARGET_OUT_DIR}/${_helper_output_name}.app"
+      "${CEF_APP}/Contents/Frameworks/${_helper_output_name}.app"
       VERBATIM
-      )
+    )
   endforeach()
 
   # Manually process and copy over resource files.
@@ -227,7 +233,9 @@ endif()
 if(OS_WINDOWS)
   # Executable target.
   add_executable(${CEF_TARGET} WIN32 ${CEFSIMPLE_SRCS})
-  add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
+  add_subdirectory(${CEF_LIBCEF_DLL_WRAPPER_PATH} libcef_dll_wrapper)
+
+  # add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
   SET_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
   target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
 
