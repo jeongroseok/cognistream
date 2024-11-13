@@ -1,5 +1,23 @@
-# Created by https://www.toptal.com/developers/gitignore/api/visualstudio,visualstudiocode,cmake,c++,c,windows,linux,osx
-# Edit at https://www.toptal.com/developers/gitignore?templates=visualstudio,visualstudiocode,cmake,c++,c,windows,linux,osx
+# Created by https://www.toptal.com/developers/gitignore/api/visualstudio,visualstudiocode,cmake,c++,c,windows,linux,osx,bazel
+# Edit at https://www.toptal.com/developers/gitignore?templates=visualstudio,visualstudiocode,cmake,c++,c,windows,linux,osx,bazel
+
+### Customization(사용자 정의) ###
+/build
+
+### Bazel ###
+# gitignore template for Bazel build system
+# website: https://bazel.build/
+
+# Ignore all bazel-* symlinks. There is no full list since this can change
+# based on the name of the directory bazel is cloned into.
+/bazel-*
+
+# Directories for the Bazel IntelliJ plugin containing the generated
+# IntelliJ project files and plugin configuration. Seperate directories are
+# for the IntelliJ, Android Studio and CLion versions of the plugin.
+/.ijwb/
+/.aswb/
+/.clwb/
 
 ### C ###
 # Prerequisites
@@ -86,7 +104,6 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 _deps
-build
 
 ### CMake Patch ###
 # External projects
@@ -566,4 +583,4 @@ FodyWeavers.xsd
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
 
-# End of https://www.toptal.com/developers/gitignore/api/visualstudio,visualstudiocode,cmake,c++,c,windows,linux,osx
+# End of https://www.toptal.com/developers/gitignore/api/visualstudio,visualstudiocode,cmake,c++,c,windows,linux,osx,bazel
