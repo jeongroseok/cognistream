@@ -4,9 +4,9 @@
 
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++에서 생성한 포함 파일.
-// cefsimple.rc에서 사용됨.
+// cognistream.rc에서 사용됨.
 
-#define IDI_CEFSIMPLE 120
+#define IDI_COGNISTREAM 120
 #define IDI_SMALL 121
 
 // MacOS와 관련된 파일을 제외

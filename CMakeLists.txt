@@ -4,6 +4,13 @@
 
 
 #
+# 편의
+#
+
+list(APPEND CEF_CXX_COMPILER_FLAGS /wd4267 /wd4199 /IGNORE:4199)
+
+
+#
 # 공통 설정
 #
 
@@ -20,10 +27,10 @@ endmacro()
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
 # 타겟 실행 파일 이름 설정
-set(CEF_TARGET "cefsimple")
+set(COGNISTREAM_TARGET "cognistream")
 
 # 프로젝트 이름 설정
-project(${CEF_TARGET})
+project(${COGNISTREAM_TARGET})
 
 # include 디렉토리 설정
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -34,8 +41,8 @@ find_package(Torch REQUIRED)
 
 # CMake 모듈 경로 설정
 if(OS_MAC)
-  set(CEF_HELPER_TARGET "cefsimple_Helper")
-  set(CEF_HELPER_OUTPUT_NAME "cefsimple Helper")
+  set(CEF_HELPER_TARGET "cognistream_Helper")
+  set(CEF_HELPER_OUTPUT_NAME "cognistream Helper")
 else()
   # libcef 라이브러리 링크를 위한 논리 타겟
   ADD_LOGICAL_TARGET("libcef_lib" "${CEF_LIB_DEBUG}" "${CEF_LIB_RELEASE}")
@@ -71,65 +78,65 @@ list(APPEND CEF_STANDARD_LIBS ${TORCH_LIBRARIES})
 # 소스 파일 설정
 #
 
-# cefsimple 소스 파일
-set(CEFSIMPLE_SRCS
+# cognistream 소스 파일
+set(COGNISTREAM_SRCS
   simple_app.cc
   simple_app.h
   simple_handler.cc
   simple_handler.h
 )
-set(CEFSIMPLE_SRCS_LINUX
-  cefsimple_linux.cc
+set(COGNISTREAM_SRCS_LINUX
+  main_linux.cc
   simple_handler_linux.cc
 )
-set(CEFSIMPLE_SRCS_MAC
-  cefsimple_mac.mm
+set(COGNISTREAM_SRCS_MAC
+  main_mac.mm
   simple_handler_mac.mm
 )
-set(CEFSIMPLE_SRCS_WINDOWS
-  cefsimple_win.cc
+set(COGNISTREAM_SRCS_WINDOWS
+  main_win.cc
   resource.h
   simple_handler_win.cc
 )
-APPEND_PLATFORM_SOURCES(CEFSIMPLE_SRCS)
-source_group(cefsimple FILES ${CEFSIMPLE_SRCS})
+APPEND_PLATFORM_SOURCES(COGNISTREAM_SRCS)
+source_group(cognistream FILES ${COGNISTREAM_SRCS})
 
-set(CEFSIMPLE_WIN_SRCS_WINDOWS
-  win/cefsimple.rc
+set(COGNISTREAM_WIN_SRCS_WINDOWS
+  win/cognistream.rc
 )
-APPEND_PLATFORM_SOURCES(CEFSIMPLE_WIN_SRCS)
-source_group(cefsimple\\win FILES ${CEFSIMPLE_WIN_SRCS})
+APPEND_PLATFORM_SOURCES(COGNISTREAM_WIN_SRCS)
+source_group(cognistream\\win FILES ${COGNISTREAM_WIN_SRCS})
 
-set(CEFSIMPLE_SRCS
-  ${CEFSIMPLE_SRCS}
-  ${CEFSIMPLE_WIN_SRCS}
+set(COGNISTREAM_SRCS
+  ${COGNISTREAM_SRCS}
+  ${COGNISTREAM_WIN_SRCS}
 )
 
-# cefsimple 헬퍼 소스 파일
-set(CEFSIMPLE_HELPER_SRCS_MAC
+# cognistream 헬퍼 소스 파일
+set(COGNISTREAM_HELPER_SRCS_MAC
   process_helper_mac.cc
 )
-APPEND_PLATFORM_SOURCES(CEFSIMPLE_HELPER_SRCS)
-source_group(cefsimple FILES ${CEFSIMPLE_HELPER_SRCS})
+APPEND_PLATFORM_SOURCES(COGNISTREAM_HELPER_SRCS)
+source_group(cognistream FILES ${COGNISTREAM_HELPER_SRCS})
 
-# cefsimple 리소스 파일
-set(CEFSIMPLE_RESOURCES_MAC_SRCS_MAC
+# cognistream 리소스 파일
+set(COGNISTREAM_RESOURCES_MAC_SRCS_MAC
   mac/Info.plist.in
-  mac/cefsimple.icns
+  mac/cognistream.icns
 )
-APPEND_PLATFORM_SOURCES(CEFSIMPLE_RESOURCES_MAC_SRCS)
-source_group(cefsimple\\mac FILES ${CEFSIMPLE_RESOURCES_MAC_SRCS})
+APPEND_PLATFORM_SOURCES(COGNISTREAM_RESOURCES_MAC_SRCS)
+source_group(cognistream\\mac FILES ${COGNISTREAM_RESOURCES_MAC_SRCS})
 
-set(CEFSIMPLE_RESOURCES_MAC_ENGLISH_LPROJ_SRCS_MAC
+set(COGNISTREAM_RESOURCES_MAC_ENGLISH_LPROJ_SRCS_MAC
   mac/English.lproj/InfoPlist.strings
   mac/English.lproj/MainMenu.xib
 )
-APPEND_PLATFORM_SOURCES(CEFSIMPLE_RESOURCES_MAC_ENGLISH_LPROJ_SRCS)
-source_group(cefsimple\\mac\\English.lproj FILES ${CEFSIMPLE_RESOURCES_MAC_ENGLISH_LPROJ_SRCS})
+APPEND_PLATFORM_SOURCES(COGNISTREAM_RESOURCES_MAC_ENGLISH_LPROJ_SRCS)
+source_group(cognistream\\mac\\English.lproj FILES ${COGNISTREAM_RESOURCES_MAC_ENGLISH_LPROJ_SRCS})
 
-set(CEFSIMPLE_RESOURCES_SRCS
-  ${CEFSIMPLE_RESOURCES_MAC_SRCS}
-  ${CEFSIMPLE_RESOURCES_MAC_ENGLISH_LPROJ_SRCS}
+set(COGNISTREAM_RESOURCES_SRCS
+  ${COGNISTREAM_RESOURCES_MAC_SRCS}
+  ${COGNISTREAM_RESOURCES_MAC_ENGLISH_LPROJ_SRCS}
 )
 
 
@@ -139,25 +146,25 @@ set(CEFSIMPLE_RESOURCES_SRCS
 
 if(OS_LINUX)
   # 실행 파일 타겟 생성
-  add_executable(${CEF_TARGET} ${CEFSIMPLE_SRCS})
-  SET_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
+  add_executable(${COGNISTREAM_TARGET} ${COGNISTREAM_SRCS})
+  SET_EXECUTABLE_TARGET_PROPERTIES(${COGNISTREAM_TARGET})
   add_subdirectory(${CEF_LIBCEF_DLL_WRAPPER_PATH} libcef_dll_wrapper)
-  target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
+  target_link_libraries(${COGNISTREAM_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
 
   # rpath 설정하여 라이브러리를 실행 파일 옆에 배치 가능
-  set_target_properties(${CEF_TARGET} PROPERTIES INSTALL_RPATH "$ORIGIN")
-  set_target_properties(${CEF_TARGET} PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
-  set_target_properties(${CEF_TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CEF_TARGET_OUT_DIR})
+  set_target_properties(${COGNISTREAM_TARGET} PROPERTIES INSTALL_RPATH "$ORIGIN")
+  set_target_properties(${COGNISTREAM_TARGET} PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
+  set_target_properties(${COGNISTREAM_TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CEF_TARGET_OUT_DIR})
 
   # 바이너리 및 리소스 파일을 타겟 출력 디렉토리에 복사
-  COPY_FILES("${CEF_TARGET}" "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}")
-  COPY_FILES("${CEF_TARGET}" "${CEF_RESOURCE_FILES}" "${CEF_RESOURCE_DIR}" "${CEF_TARGET_OUT_DIR}")
+  COPY_FILES("${COGNISTREAM_TARGET}" "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}")
+  COPY_FILES("${COGNISTREAM_TARGET}" "${CEF_RESOURCE_FILES}" "${CEF_RESOURCE_DIR}" "${CEF_TARGET_OUT_DIR}")
   if(EXISTS "${CEF_BINARY_DIR}/libminigbm.so")
-    COPY_FILES("${CEF_TARGET}" "libminigbm.so" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}")
+    COPY_FILES("${COGNISTREAM_TARGET}" "libminigbm.so" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}")
   endif()
 
   # chrome-sandbox 타겟에 SUID 권한 설정
-  SET_LINUX_SUID_PERMISSIONS("${CEF_TARGET}" "${CEF_TARGET_OUT_DIR}/chrome-sandbox")
+  SET_LINUX_SUID_PERMISSIONS("${COGNISTREAM_TARGET}" "${CEF_TARGET_OUT_DIR}/chrome-sandbox")
 endif()
 
 
@@ -177,11 +184,11 @@ if(OS_MAC)
   endif()
 
   # 메인 앱 번들 출력 경로
-  set(CEF_APP "${CEF_TARGET_OUT_DIR}/${CEF_TARGET}.app")
+  set(CEF_APP "${CEF_TARGET_OUT_DIR}/${COGNISTREAM_TARGET}.app")
 
   # 주요 Info.plist 파일에서 참조되는 변수
-  set(EXECUTABLE_NAME "${CEF_TARGET}")
-  set(PRODUCT_NAME "${CEF_TARGET}")
+  set(EXECUTABLE_NAME "${COGNISTREAM_TARGET}")
+  set(PRODUCT_NAME "${COGNISTREAM_TARGET}")
 
   if(USE_SANDBOX)
     # cef_sandbox 라이브러리를 링크하기 위한 논리 타겟
@@ -189,17 +196,17 @@ if(OS_MAC)
   endif()
 
   # 메인 앱 번들 타겟 생성
-  add_executable(${CEF_TARGET} MACOSX_BUNDLE ${CEFSIMPLE_RESOURCES_SRCS} ${CEFSIMPLE_SRCS})
-  SET_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
+  add_executable(${COGNISTREAM_TARGET} MACOSX_BUNDLE ${COGNISTREAM_RESOURCES_SRCS} ${COGNISTREAM_SRCS})
+  SET_EXECUTABLE_TARGET_PROPERTIES(${COGNISTREAM_TARGET})
   add_subdirectory(${CEF_LIBCEF_DLL_WRAPPER_PATH} libcef_dll_wrapper)
-  target_link_libraries(${CEF_TARGET} libcef_dll_wrapper ${CEF_STANDARD_LIBS})
-  set_target_properties(${CEF_TARGET} PROPERTIES
+  target_link_libraries(${COGNISTREAM_TARGET} libcef_dll_wrapper ${CEF_STANDARD_LIBS})
+  set_target_properties(${COGNISTREAM_TARGET} PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/mac/Info.plist.in
   )
 
   # CEF 프레임워크를 Frameworks 디렉토리에 복사
   add_custom_command(
-    TARGET ${CEF_TARGET}
+    TARGET ${COGNISTREAM_TARGET}
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     "${CEF_BINARY_DIR}/Chromium Embedded Framework.framework"
@@ -228,7 +235,7 @@ if(OS_MAC)
     file(WRITE ${_helper_info_plist} ${_plist_contents})
 
     # Helper 실행 파일 타겟 생성
-    add_executable(${_helper_target} MACOSX_BUNDLE ${CEFSIMPLE_HELPER_SRCS})
+    add_executable(${_helper_target} MACOSX_BUNDLE ${COGNISTREAM_HELPER_SRCS})
     SET_EXECUTABLE_TARGET_PROPERTIES(${_helper_target})
     add_dependencies(${_helper_target} libcef_dll_wrapper)
     target_link_libraries(${_helper_target} libcef_dll_wrapper ${CEF_STANDARD_LIBS})
@@ -242,11 +249,11 @@ if(OS_MAC)
     endif()
 
     # Helper를 메인 타겟의 종속성으로 추가
-    add_dependencies(${CEF_TARGET} "${_helper_target}")
+    add_dependencies(${COGNISTREAM_TARGET} "${_helper_target}")
 
     # Helper 앱 번들을 Frameworks 디렉토리에 복사
     add_custom_command(
-      TARGET ${CEF_TARGET}
+      TARGET ${COGNISTREAM_TARGET}
       POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_directory
       "${CEF_TARGET_OUT_DIR}/${_helper_output_name}.app"
@@ -257,7 +264,7 @@ if(OS_MAC)
 
   # 리소스 파일 수동 처리 및 복사
   set(PREFIXES "mac/")
-  COPY_MAC_RESOURCES("${CEFSIMPLE_RESOURCES_SRCS}" "${PREFIXES}" "${CEF_TARGET}" "${CMAKE_CURRENT_SOURCE_DIR}" "${CEF_APP}")
+  COPY_MAC_RESOURCES("${COGNISTREAM_RESOURCES_SRCS}" "${PREFIXES}" "${COGNISTREAM_TARGET}" "${CMAKE_CURRENT_SOURCE_DIR}" "${CEF_APP}")
 endif()
 
 
@@ -267,24 +274,24 @@ endif()
 
 if(OS_WINDOWS)
   # 실행 파일 타겟 생성
-  add_executable(${CEF_TARGET} WIN32 ${CEFSIMPLE_SRCS})
+  add_executable(${COGNISTREAM_TARGET} WIN32 ${COGNISTREAM_SRCS})
   add_subdirectory(${CEF_LIBCEF_DLL_WRAPPER_PATH} libcef_dll_wrapper)
-  SET_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
-  target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
+  SET_EXECUTABLE_TARGET_PROPERTIES(${COGNISTREAM_TARGET})
+  target_link_libraries(${COGNISTREAM_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
 
   if(USE_SANDBOX)
     # cef_sandbox 라이브러리를 링크하기 위한 논리 타겟
     ADD_LOGICAL_TARGET("cef_sandbox_lib" "${CEF_SANDBOX_LIB_DEBUG}" "${CEF_SANDBOX_LIB_RELEASE}")
-    target_link_libraries(${CEF_TARGET} cef_sandbox_lib ${CEF_SANDBOX_STANDARD_LIBS})
+    target_link_libraries(${COGNISTREAM_TARGET} cef_sandbox_lib ${CEF_SANDBOX_STANDARD_LIBS})
   endif()
 
   # 실행 파일에 커스텀 매니페스트 파일 추가
-  ADD_WINDOWS_MANIFEST("${CMAKE_CURRENT_SOURCE_DIR}/win" "${CEF_TARGET}" "exe")
-  ADD_WINDOWS_TORCH_DLLS(${CEF_TARGET} ${TORCH_INSTALL_PREFIX})
+  ADD_WINDOWS_MANIFEST("${CMAKE_CURRENT_SOURCE_DIR}/win" "${COGNISTREAM_TARGET}" "exe")
+  ADD_WINDOWS_TORCH_DLLS(${COGNISTREAM_TARGET} ${TORCH_INSTALL_PREFIX})
 
   # 바이너리 및 리소스 파일을 타겟 출력 디렉토리에 복사
-  COPY_FILES("${CEF_TARGET}" "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}")
-  COPY_FILES("${CEF_TARGET}" "${CEF_RESOURCE_FILES}" "${CEF_RESOURCE_DIR}" "${CEF_TARGET_OUT_DIR}")
+  COPY_FILES("${COGNISTREAM_TARGET}" "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}")
+  COPY_FILES("${COGNISTREAM_TARGET}" "${CEF_RESOURCE_FILES}" "${CEF_RESOURCE_DIR}" "${CEF_TARGET_OUT_DIR}")
 
 
 endif()
@@ -313,6 +320,6 @@ PRINT_CEF_CONFIG()
 # set(CPACK_PACKAGE_VERSION "0.0.1")
 # set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
 
-# install(TARGETS ${CEF_TARGET} DESTINATION .)
+# install(TARGETS ${COGNISTREAM_TARGET} DESTINATION .)
 
 # include(CPack)

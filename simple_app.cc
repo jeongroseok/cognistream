@@ -193,7 +193,7 @@ void SimpleApp::OnContextInitialized()
 
 #if defined(OS_WIN)
     // Windows에서는 CreateWindowEx에 전달할 플래그 지정
-    window_info.SetAsPopup(nullptr, "cefsimple");
+    window_info.SetAsPopup(nullptr, "cognistream");
 #endif
 
     // 런타임 스타일 설정
