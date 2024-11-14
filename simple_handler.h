@@ -42,6 +42,9 @@ public:
                    ErrorCode errorCode,
                    const CefString &errorText,
                    const CefString &failedUrl) override;
+  void OnLoadEnd(CefRefPtr<CefBrowser> browser,
+                 CefRefPtr<CefFrame> frame,
+                 int httpStatusCode) override;
 
   void ShowMainWindow();
 

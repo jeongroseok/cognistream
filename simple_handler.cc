@@ -6,6 +6,7 @@
 
 #include <sstream>
 #include <string>
+#include <torch/torch.h>
 
 #include "include/base/cef_callback.h"
 #include "include/cef_app.h"
@@ -154,6 +155,20 @@ void SimpleHandler::OnLoadError(CefRefPtr<CefBrowser> browser,
      << " (" << errorCode << ").</h2></body></html>";
 
   frame->LoadURL(GetDataURI(ss.str(), "text/html"));
+}
+
+// 로드 완료 시 호출
+void SimpleHandler::OnLoadEnd(CefRefPtr<CefBrowser> browser,
+                              CefRefPtr<CefFrame> frame,
+                              int httpStatusCode)
+{
+  CEF_REQUIRE_UI_THREAD();
+
+  // Torch 텐서를 생성하고 출력합니다.
+  torch::Tensor tensor = torch::rand({2, 3});
+  const std::string tensor_str = tensor.toString();
+  const CefString code = "alert('" + tensor_str + "');";
+  frame->ExecuteJavaScript(code, frame->GetURL(), 0);
 }
 
 // 메인 창 표시

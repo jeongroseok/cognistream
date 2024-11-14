@@ -1,0 +1,50 @@
+<svg width="256" height="256" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <!-- Light 모드 그라데이션 -->
+        <linearGradient id="lightGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#E8F4FF;stop-opacity:1" />
+            <stop offset="60%" style="stop-color:#89CFF0;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#4682B4;stop-opacity:1" />
+        </linearGradient>
+  
+        <!-- Dark 모드 그라데이션 -->
+        <linearGradient id="darkGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#1A3A5A;stop-opacity:1" />
+            <stop offset="60%" style="stop-color:#2C5C8F;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#4682B4;stop-opacity:1" />
+        </linearGradient>
+  
+        <!-- 내부 육각형 그라데이션 (Light) -->
+        <linearGradient id="innerHexGradientLight" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4682B4;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#89CFF0;stop-opacity:1" />
+        </linearGradient>
+  
+        <!-- 내부 육각형 그라데이션 (Dark) -->
+        <linearGradient id="innerHexGradientDark" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#89CFF0;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#E8F4FF;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+  
+    <!-- Light 모드 -->
+    <g>
+        <!-- 앱 아이콘 배경 -->
+        <rect x="0" y="0" width="200" height="200" rx="45" ry="45" fill="url(#lightGradient)" />
+  
+        <!-- 중앙 심볼 -->
+        <g transform="translate(35, 35)">
+            <!-- 외부 육각형 -->
+            <path d="M65,0 L115,28.5 L115,101.5 L65,130 L15,101.5 L15,28.5 Z" fill="white" opacity="0.98" />
+  
+            <!-- 내부 육각형 -->
+            <path d="M65,20 L100,40 L100,90 L65,110 L30,90 L30,40 Z" fill="url(#innerHexGradientLight)" opacity="0.95" />
+  
+            <!-- 무한대 심볼 -->
+            <g transform="translate(65, 72) rotate(90) scale(0.6)">
+                <path d="M-30,-15 C-50,-15 -50,15 -30,15 C-10,15 -10,-15 10,-15 C30,-15 30,15 10,15 C-10,15 -10,-15 -30,-15Z" 
+                      fill="none" stroke="white" stroke-width="8" stroke-linecap="round" />
+            </g>
+        </g>
+    </g>
+</svg>

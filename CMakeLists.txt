@@ -2,10 +2,69 @@
 # reserved. Use of this source code is governed by a BSD-style license that
 # can be found in the LICENSE file.
 
+
+#
+# 공통 설정
+#
+
+# 눈에 띄는 매크로 정의 추가
+macro(message_ TITLE MESSAGE)
+  message(STATUS "✨🚀✨===== ${TITLE} =====✨🚀✨")
+  message(STATUS "🔔 ${MESSAGE} 🔔")
+endmacro()
+
+# 빌드 과정에서 디버그 정보를 출력
+# set(CMAKE_VERBOSE_MAKEFILE ON)
+
+# CMake 최소 버전 설정
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
-project(cefsimple)
+
+# 타겟 실행 파일 이름 설정
+set(CEF_TARGET "cefsimple")
+
+# 프로젝트 이름 설정
+project(${CEF_TARGET})
+
+# include 디렉토리 설정
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+# 라이브러리 찾기
 find_package(CEF REQUIRED)
 find_package(Torch REQUIRED)
+
+# CMake 모듈 경로 설정
+if(OS_MAC)
+  set(CEF_HELPER_TARGET "cefsimple_Helper")
+  set(CEF_HELPER_OUTPUT_NAME "cefsimple Helper")
+else()
+  # libcef 라이브러리 링크를 위한 논리 타겟
+  ADD_LOGICAL_TARGET("libcef_lib" "${CEF_LIB_DEBUG}" "${CEF_LIB_RELEASE}")
+endif()
+
+# 타겟 출력 디렉토리 설정
+SET_CEF_TARGET_OUT_DIR()
+
+
+#
+# libtorch 설정
+#
+
+# libtorch dll 파일 복사
+macro(ADD_WINDOWS_TORCH_DLLS target install_prefix)
+file(GLOB TORCH_DLLS ${install_prefix}/lib/*.dll)
+add_custom_command(
+  TARGET ${target}
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+  ${TORCH_DLLS}
+  $<TARGET_FILE_DIR:${target}>)
+endmacro()
+
+# CEF 변수에 libtorch 변수 추가
+list(REMOVE_ITEM CEF_COMPILER_FLAGS /GR- /WX)
+list(REMOVE_ITEM CEF_CXX_COMPILER_FLAGS /GR- /WX)
+list(APPEND CEF_CXX_COMPILER_FLAGS ${TORCH_CXX_FLAGS})
+list(APPEND CEF_STANDARD_LIBS ${TORCH_LIBRARIES})
 
 
 #
@@ -75,24 +134,6 @@ set(CEFSIMPLE_RESOURCES_SRCS
 
 
 #
-# 공통 설정
-#
-
-# 타겟 실행 파일 이름 설정
-set(CEF_TARGET "cefsimple")
-if(OS_MAC)
-  set(CEF_HELPER_TARGET "cefsimple_Helper")
-  set(CEF_HELPER_OUTPUT_NAME "cefsimple Helper")
-else()
-  # libcef 라이브러리 링크를 위한 논리 타겟
-  ADD_LOGICAL_TARGET("libcef_lib" "${CEF_LIB_DEBUG}" "${CEF_LIB_RELEASE}")
-endif()
-
-# 타겟 출력 디렉토리 설정
-SET_CEF_TARGET_OUT_DIR()
-
-
-#
 # 리눅스 구성
 #
 
@@ -100,7 +141,7 @@ if(OS_LINUX)
   # 실행 파일 타겟 생성
   add_executable(${CEF_TARGET} ${CEFSIMPLE_SRCS})
   SET_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
-  add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
+  add_subdirectory(${CEF_LIBCEF_DLL_WRAPPER_PATH} libcef_dll_wrapper)
   target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
 
   # rpath 설정하여 라이브러리를 실행 파일 옆에 배치 가능
@@ -150,7 +191,7 @@ if(OS_MAC)
   # 메인 앱 번들 타겟 생성
   add_executable(${CEF_TARGET} MACOSX_BUNDLE ${CEFSIMPLE_RESOURCES_SRCS} ${CEFSIMPLE_SRCS})
   SET_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
-  add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
+  add_subdirectory(${CEF_LIBCEF_DLL_WRAPPER_PATH} libcef_dll_wrapper)
   target_link_libraries(${CEF_TARGET} libcef_dll_wrapper ${CEF_STANDARD_LIBS})
   set_target_properties(${CEF_TARGET} PROPERTIES
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/mac/Info.plist.in
@@ -228,8 +269,6 @@ if(OS_WINDOWS)
   # 실행 파일 타겟 생성
   add_executable(${CEF_TARGET} WIN32 ${CEFSIMPLE_SRCS})
   add_subdirectory(${CEF_LIBCEF_DLL_WRAPPER_PATH} libcef_dll_wrapper)
-
-  # 타겟 속성 설정 및 라이브러리 링크
   SET_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
   target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
 
@@ -241,8 +280,39 @@ if(OS_WINDOWS)
 
   # 실행 파일에 커스텀 매니페스트 파일 추가
   ADD_WINDOWS_MANIFEST("${CMAKE_CURRENT_SOURCE_DIR}/win" "${CEF_TARGET}" "exe")
+  ADD_WINDOWS_TORCH_DLLS(${CEF_TARGET} ${TORCH_INSTALL_PREFIX})
 
   # 바이너리 및 리소스 파일을 타겟 출력 디렉토리에 복사
   COPY_FILES("${CEF_TARGET}" "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}")
   COPY_FILES("${CEF_TARGET}" "${CEF_RESOURCE_FILES}" "${CEF_RESOURCE_DIR}" "${CEF_TARGET_OUT_DIR}")
+
+
 endif()
+
+
+#
+# CEF 설정 출력
+#
+PRINT_CEF_CONFIG()
+
+
+#
+# 패키지 생성 설정
+#
+
+# if(OS_WINDOWS)
+#   set(CPACK_GENERATOR "NSIS")
+# elseif(OS_MAC)
+#   set(CPACK_GENERATOR "DragNDrop")
+# elseif(OS_LINUX)
+#   set(CPACK_GENERATOR "TGZ")
+# endif()
+
+# set(CPACK_PACKAGE_NAME "cognistream")
+# set(CPACK_PACKAGE_VENDOR "jeongro.net")
+# set(CPACK_PACKAGE_VERSION "0.0.1")
+# set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
+
+# install(TARGETS ${CEF_TARGET} DESTINATION .)
+
+# include(CPack)

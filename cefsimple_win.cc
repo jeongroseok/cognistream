@@ -9,15 +9,16 @@
 #include "include/cef_command_line.h"
 #include "include/cef_sandbox_win.h"
 
-// CMake으로 프로젝트를 생성할 때 CEF_USE_SANDBOX 값이 자동으로 정의됩니다.
-// 필요한 컴파일러 버전을 사용하는 경우 자동으로 정의됩니다. 샌드박스 사용을 비활성화하려면
-// CMake 명령줄에 -DUSE_SANDBOX=OFF를 전달하세요.
 // 샌드박스 지원을 수동으로 활성화하려면 이 줄의 주석을 제거하세요.
 // #define CEF_USE_SANDBOX 1
 
 #if defined(CEF_USE_SANDBOX)
-// cef_sandbox.lib 정적 라이브러리는 모든 VS 버전과 성공적으로 링크되지 않을 수 있습니다.
 #pragma comment(lib, "cef_sandbox.lib")
+#endif
+
+// 32비트는 지원하지 않습니다.
+#if defined(ARCH_CPU_32_BITS)
+#error "Only 64-bit is supported"
 #endif
 
 // 모든 프로세스의 진입점 함수.
@@ -30,20 +31,6 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   UNREFERENCED_PARAMETER(lpCmdLine);
 
   int exit_code;
-
-#if defined(ARCH_CPU_32_BITS)
-  // 32비트 Windows에서 선호되는 4MiB 스택 크기를 가진 fiber로 메인 스레드를 실행합니다.
-  // 이 함수는 실행 파일의 진입점 함수(`main()` 또는 `wWinMain()`)의 최상단에서 호출되어야 합니다.
-  // 링커 플래그 `/STACK:0x80000`을 통해 구성된 초기 스택 크기 0.5MiB와 함께 사용됩니다.
-  // 이는 Windows 스레드 풀과 같이 스택 크기를 링커 플래그로만 제어할 수 있는 스레드의 메모리를 절약합니다.
-  exit_code = CefRunWinMainWithPreferredStackSize(wWinMain, hInstance,
-                                                  lpCmdLine, nCmdShow);
-  if (exit_code >= 0)
-  {
-    // fiber가 완료되었으므로 여기서 반환합니다.
-    return exit_code;
-  }
-#endif
 
   void *sandbox_info = nullptr;
 
@@ -62,15 +49,14 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   exit_code = CefExecuteProcess(main_args, nullptr, sandbox_info);
   if (exit_code >= 0)
   {
-    // 하위 프로세스가 완료되었으므로 여기서 반환합니다.
     return exit_code;
   }
 
-  // 이 메서드에서 사용하기 위해 명령줄 인수를 파싱합니다.
+  // 명령줄 인수를 파싱합니다.
   CefRefPtr<CefCommandLine> command_line = CefCommandLine::CreateCommandLine();
   command_line->InitFromString(::GetCommandLineW());
 
-  // 여기에서 CEF 전역 설정을 지정합니다.
+  // CEF 전역 설정을 지정합니다.
   CefSettings settings;
 
 #if !defined(CEF_USE_SANDBOX)
@@ -87,7 +73,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
     return CefGetExitCode();
   }
 
-  // CEF 메시지 루프를 실행합니다. CefQuitMessageLoop()가 호출될 때까지 차단됩니다.
+  // CEF 메시지 루프는 CefQuitMessageLoop()가 호출될 때까지 블로킹됩니다.
   CefRunMessageLoop();
 
   // CEF를 종료합니다.
